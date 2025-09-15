@@ -1,0 +1,1 @@
+-- Placeholder: use o car.lua padrão do OSRM ou ajuste penalidades conforme necessidade.

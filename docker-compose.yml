@@ -1,0 +1,45 @@
+version: "3.9"
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: frota
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+
+  osrm:
+    build: ./infra/osrm
+    environment:
+      OSM_PBF: /data/your-region.osm.pbf
+    ports: ["5000:5000"]
+    volumes:
+      - ./infra/osrm/data:/data
+      - ./infra/osrm/profiles:/profiles
+
+  api:
+    build: ./apps/api
+    env_file: .env
+    depends_on: [db, redis, osrm, optimizer]
+    ports: ["8000:8000"]
+
+  optimizer:
+    build: ./apps/optimizer
+    env_file: .env
+    depends_on: [redis, osrm]
+    ports: ["8100:8100"]
+
+  web:
+    build: ./apps/web
+    env_file: .env
+    depends_on: [api]
+    ports: ["3000:3000"]
+
+volumes:
+  pgdata:
