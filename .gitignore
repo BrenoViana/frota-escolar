@@ -8,6 +8,7 @@ __pycache__/
 .env
 dist/
 build/
+.angular/
 infra/osrm/data/*
 !infra/osrm/data/.gitkeep
 infra/postgres/backups/*

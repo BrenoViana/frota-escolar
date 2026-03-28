@@ -1,0 +1,204 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h2>{{ isEdit ? 'Editar veículo' : 'Cadastro de veículo' }}</h2>
+      <p *ngIf="!isEdit">Defina placa, modelo e alocação de rota.</p>
+      <p *ngIf="isEdit">Atualize as informações principais do veículo.</p>
+    </div>
+    <div class="page-actions">
+      <button class="ghost" [routerLink]="['/veiculos']">Cancelar</button>
+      <button class="primary" type="submit" form="vehicle-form" [disabled]="saving || loading">
+        {{ isEdit ? 'Salvar alterações' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="notice error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="status-pill" *ngIf="loading">Carregando dados do veículo...</div>
+
+  <div class="two-col">
+    <article class="card">
+      <form id="vehicle-form" class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <fieldset class="form-section">
+          <legend>Dados do veículo</legend>
+          <div class="form-grid">
+            <div class="field">
+              <label class="required">Placa</label>
+              <input formControlName="plate" placeholder="ABC-1234">
+              <small class="error" *ngIf="form.controls.plate.touched && form.controls.plate.invalid">
+                Informe a placa.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Modelo</label>
+              <input formControlName="model" placeholder="Mercedes LO-916">
+              <small class="error" *ngIf="form.controls.model.touched && form.controls.model.invalid">
+                Informe o modelo.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Capacidade</label>
+              <input type="number" min="0" formControlName="capacity">
+            </div>
+
+            <div class="field">
+              <label class="required">Status</label>
+              <select formControlName="status">
+                <option *ngFor="let status of statuses" [value]="status">
+                  {{ status | statusLabel }}
+                </option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label>Rota alocada</label>
+              <select formControlName="routeId">
+                <option value="">Sem alocação</option>
+                <option *ngFor="let route of (routes$ | async) ?? []" [value]="route.id">
+                  {{ route.name }} - {{ route.schoolName }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>Garagem</legend>
+          <div class="form-grid">
+            <div class="field">
+              <label class="required">CEP (garagem)</label>
+              <input formControlName="garageCep" placeholder="00000-000">
+              <small class="error" *ngIf="form.controls.garageCep.touched && form.controls.garageCep.invalid">
+                {{
+                  form.controls.garageCep.errors?.['cep']
+                    ? 'CEP inválido.'
+                    : 'Informe o CEP.'
+                }}
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Número (garagem)</label>
+              <input formControlName="garageNumber" placeholder="120">
+              <small class="error" *ngIf="form.controls.garageNumber.touched && form.controls.garageNumber.invalid">
+                Informe o número.
+              </small>
+            </div>
+
+            <div class="field full">
+              <label class="required">Rua (garagem)</label>
+              <input formControlName="garageStreet" placeholder="Rua das Flores">
+              <small class="error" *ngIf="form.controls.garageStreet.touched && form.controls.garageStreet.invalid">
+                Informe a rua.
+              </small>
+            </div>
+
+            <div class="field full">
+              <label class="required">Bairro (garagem)</label>
+              <input formControlName="garageDistrict" placeholder="Centro">
+              <small class="error" *ngIf="form.controls.garageDistrict.touched && form.controls.garageDistrict.invalid">
+                Informe o bairro.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Cidade (garagem)</label>
+              <input formControlName="garageCity" placeholder="São Paulo">
+              <small class="error" *ngIf="form.controls.garageCity.touched && form.controls.garageCity.invalid">
+                Informe a cidade.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">UF (garagem)</label>
+              <input formControlName="garageState" placeholder="SP" maxlength="2">
+              <small class="error" *ngIf="form.controls.garageState.touched && form.controls.garageState.invalid">
+                Informe a UF.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Lat (garagem)</label>
+              <input type="number" step="0.00000001" formControlName="garageLat" placeholder="-23.5">
+              <small class="error" *ngIf="form.controls.garageLat.touched && form.controls.garageLat.invalid">
+                {{
+                  form.controls.garageLat.errors?.['latRange']
+                    ? 'Latitude fora do intervalo (-90 a 90).'
+                    : 'Informe a latitude.'
+                }}
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Long (garagem)</label>
+              <input type="number" step="0.00000001" formControlName="garageLng" placeholder="-46.6">
+              <small class="error" *ngIf="form.controls.garageLng.touched && form.controls.garageLng.invalid">
+                {{
+                  form.controls.garageLng.errors?.['lngRange']
+                    ? 'Longitude fora do intervalo (-180 a 180).'
+                    : 'Informe a longitude.'
+                }}
+              </small>
+            </div>
+
+            <div class="field full" *ngIf="geoLoading">
+              <small class="status-pill">Buscando endereço...</small>
+            </div>
+
+            <div class="field full" *ngIf="geoMessage">
+              <small class="error">{{ geoMessage }}</small>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>Observações</legend>
+          <div class="form-grid">
+            <div class="field full">
+              <label>Observações</label>
+              <textarea rows="4" formControlName="notes" placeholder="Notas de manutenção"></textarea>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <button class="ghost" type="button" [routerLink]="['/veiculos']">Cancelar</button>
+          <button class="primary" type="submit" [disabled]="saving">
+            {{ isEdit ? 'Salvar alterações' : 'Salvar veículo' }}
+          </button>
+        </div>
+      </form>
+    </article>
+
+    <article class="card list-card">
+      <div class="card-head">
+        <h3>Resumo do veículo</h3>
+        <span class="badge">
+          {{ form.value.status ? (form.value.status | statusLabel) : 'Disponível' }}
+        </span>
+      </div>
+      <ul class="list">
+        <li>
+          <div>
+            <div class="list-title">Placa</div>
+            <div class="list-sub">{{ form.value.plate || 'Não informada' }}</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="list-title">Capacidade</div>
+            <div class="list-sub">{{ form.value.capacity || 0 }} lugares</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="list-title">Rota</div>
+            <div class="list-sub">{{ form.value.routeId || 'Sem alocação' }}</div>
+          </div>
+        </li>
+      </ul>
+    </article>
+  </div>
+</section>

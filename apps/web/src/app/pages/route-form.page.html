@@ -1,0 +1,216 @@
+<section class="page" *ngIf="vm$ | async as vm; else loadingTpl">
+  <div class="page-head">
+    <div>
+      <h2>{{ isEdit ? 'Editar rota' : 'Cadastro de rota' }}</h2>
+      <p *ngIf="!isEdit">Selecione veículo, alunos e horários para otimizar a rota.</p>
+      <p *ngIf="isEdit">Atualize veículo, alunos e informações principais da rota.</p>
+    </div>
+    <div class="page-actions">
+      <button class="ghost" *ngIf="isEdit && routeId" [routerLink]="['/rotas', routeId, 'otimizar']">
+        Otimizar
+      </button>
+      <button
+        class="ghost"
+        *ngIf="!isEdit"
+        type="button"
+        (click)="submitAndOptimize()"
+        [disabled]="saving || loading"
+      >
+        Salvar e otimizar
+      </button>
+      <button class="ghost" [routerLink]="['/rotas']">Cancelar</button>
+      <button class="primary" type="submit" form="route-form" [disabled]="saving || loading">
+        {{ isEdit ? 'Salvar alterações' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="notice error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="status-pill" *ngIf="loading">Carregando dados da rota...</div>
+
+  <div class="two-col">
+    <article class="card">
+      <form id="route-form" class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <fieldset class="form-section">
+          <legend>Dados da rota</legend>
+          <div class="form-grid">
+            <div class="field">
+              <label class="required">Nome da rota</label>
+              <input formControlName="name" placeholder="Ex: Rota Norte A">
+              <small class="error" *ngIf="form.controls.name.touched && form.controls.name.invalid">
+                Informe um nome válido.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Turno</label>
+              <select formControlName="shift">
+                <option *ngFor="let shift of shifts" [value]="shift">{{ shift | shiftLabel }}</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="required">Status</label>
+              <select formControlName="status">
+                <option *ngFor="let status of statuses" [value]="status">
+                  {{ status | statusLabel }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>Horário e capacidade</legend>
+          <div class="form-grid">
+            <div class="field">
+              <label class="required">Horário início</label>
+              <input formControlName="startTime" placeholder="06:30">
+            </div>
+
+            <div class="field">
+              <label class="required">Horário fim</label>
+              <input formControlName="endTime" placeholder="07:15">
+            </div>
+
+            <div class="field">
+              <label class="required">Capacidade</label>
+              <input type="number" min="0" formControlName="capacity">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>Veículo</legend>
+          <div class="form-grid">
+            <div class="field">
+              <label>Veículo (opcional)</label>
+              <select formControlName="vehicleId">
+                <option value="">Sem veículo definido</option>
+                <option *ngFor="let vehicle of vm.vehicles" [value]="vehicle.id">
+                  {{ vehicle.plate }} - {{ vehicle.model }}
+                </option>
+              </select>
+              <small class="list-sub">Você pode definir o veículo depois na otimização.</small>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>Alunos da rota</legend>
+          <div class="form-grid">
+            <div class="field full">
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>
+                        <input
+                          type="checkbox"
+                          [checked]="allSelected()"
+                          (change)="toggleAllStudents()"
+                          aria-label="Selecionar todos"
+                        >
+                      </th>
+                      <th>Aluno</th>
+                      <th>Escola</th>
+                      <th>Turno</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let student of vm.students">
+                      <td>
+                        <input
+                          type="checkbox"
+                          [checked]="isSelected(student.id)"
+                          (change)="toggleStudent(student.id)"
+                          aria-label="Selecionar aluno"
+                        >
+                      </td>
+                      <td>
+                        <div class="list-title">{{ student.name }}</div>
+                        <div class="subtext">{{ student.status | statusLabel }}</div>
+                      </td>
+                      <td>{{ student.schoolName || 'Sem escola' }}</td>
+                      <td>{{ student.shift | shiftLabel }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <small class="list-sub">Selecionados: {{ selectedCount }} aluno(s)</small>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <button class="ghost" type="button" [routerLink]="['/rotas']">Cancelar</button>
+          <button
+            class="ghost"
+            type="button"
+            *ngIf="!isEdit"
+            (click)="submitAndOptimize()"
+            [disabled]="saving"
+          >
+            Salvar e otimizar
+          </button>
+          <button class="primary" type="submit" [disabled]="saving">
+            {{ isEdit ? 'Salvar alterações' : 'Salvar rota' }}
+          </button>
+        </div>
+      </form>
+    </article>
+
+    <article class="card list-card">
+      <div class="card-head">
+        <h3>Resumo da rota</h3>
+        <span class="badge">
+          {{ form.value.status ? (form.value.status | statusLabel) : 'Ativa' }}
+        </span>
+      </div>
+      <ul class="list">
+        <li>
+          <div>
+            <div class="list-title">Horário</div>
+            <div class="list-sub">{{ form.value.startTime }} - {{ form.value.endTime }}</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="list-title">Capacidade</div>
+            <div class="list-sub">{{ form.value.capacity || 0 }} alunos</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="list-title">Veículo</div>
+            <div class="list-sub">{{ form.value.vehicleId || 'Não definido' }}</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="list-title">Escolas vinculadas</div>
+            <div class="list-sub">
+              <span *ngIf="selectedSchools().length === 0">Nenhuma escola selecionada</span>
+              <span *ngIf="selectedSchools().length > 0">
+                {{ selectedSchools().length }} escola(s)
+              </span>
+            </div>
+          </div>
+        </li>
+      </ul>
+
+      <div class="list-sub" *ngIf="selectedSchools().length > 0">
+        <div *ngFor="let school of selectedSchools()">
+          <div class="list-title">{{ school.name }}</div>
+            <div class="subtext">{{ school.address || 'Endereço não informado' }}</div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<ng-template #loadingTpl>
+  <section class="page">
+    <div class="status-pill">Carregando dados da rota...</div>
+  </section>
+</ng-template>

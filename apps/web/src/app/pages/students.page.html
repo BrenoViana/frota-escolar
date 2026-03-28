@@ -1,0 +1,92 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h2>Alunos</h2>
+      <p>Cadastre alunos e vincule rotas e escolas rapidamente.</p>
+    </div>
+    <div class="page-actions">
+      <button class="ghost" type="button" [disabled]="selectedCount === 0" (click)="deleteSelected()">
+        Excluir selecionados
+      </button>
+      <button class="primary" [routerLink]="['/alunos', 'novo']">Novo aluno</button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="filters-left">
+      <span class="chip active">Todos</span>
+      <span class="chip">Ativos</span>
+      <span class="chip">Pendentes</span>
+    </div>
+    <button class="ghost">Exportar</button>
+  </div>
+
+  <article class="card">
+    <div class="status-pill" *ngIf="loading">Carregando alunos...</div>
+    <div class="notice error" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>
+            <input
+              type="checkbox"
+              [checked]="allSelected(students)"
+              (change)="toggleAll(students)"
+              aria-label="Selecionar todos"
+            >
+          </th>
+          <th>Nome</th>
+          <th>Escola</th>
+          <th>Rota</th>
+          <th>Turno</th>
+          <th>Entrada</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let student of students">
+          <td>
+            <input
+              type="checkbox"
+              [checked]="isSelected(student.id)"
+              (change)="toggleSelection(student.id)"
+              aria-label="Selecionar aluno"
+            >
+          </td>
+          <td>
+            <div class="list-title">{{ student.name }}</div>
+            <div class="subtext">Atualizado hoje</div>
+          </td>
+          <td>{{ student.schoolName || 'Não informado' }}</td>
+          <td>{{ student.routeName || 'Sem rota' }}</td>
+          <td>{{ student.shift | shiftLabel }}</td>
+          <td>{{ student.entryTime || '-' }}</td>
+          <td>
+            <span class="badge" [ngClass]="statusClass(student.status)">
+              {{ student.status | statusLabel }}
+            </span>
+          </td>
+          <td>
+            <button class="ghost tiny" [routerLink]="['/alunos', student.id]">Ver</button>
+            <button class="ghost tiny" [routerLink]="['/alunos', student.id, 'editar']">Editar</button>
+            <button class="ghost tiny" type="button" (click)="deleteStudent(student)">Excluir</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </article>
+
+  <article class="card list-card">
+    <div class="card-head">
+      <h3>Indicadores rápidos</h3>
+      <button class="ghost tiny">Ajustar metas</button>
+    </div>
+    <div class="mini-grid">
+      <div class="mini-card" *ngFor="let metric of metrics">
+        <h4>{{ metric.label }}</h4>
+        <span>{{ metric.value }}</span>
+      </div>
+    </div>
+  </article>
+</section>

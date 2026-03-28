@@ -1,0 +1,204 @@
+export type SchoolRoute = {
+  name: string;
+  schedule: string;
+  status: string;
+  tone: string;
+};
+
+export type SchoolContact = {
+  role: string;
+  name: string;
+  phone: string;
+};
+
+export type SchoolSummary = {
+  id: string;
+  name: string;
+  district: string;
+  address: string;
+  students: number;
+  routes: number;
+  status: string;
+  tone: string;
+};
+
+export type SchoolDetail = SchoolSummary & {
+  address: string;
+  cep?: string | null;
+  street?: string | null;
+  number?: string | null;
+  city?: string | null;
+  state?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  capacity: number;
+  shift: string;
+  pickupWindow: string;
+  dropoffWindow: string;
+  manager: string;
+  phone: string;
+  notes: string;
+  routeList: SchoolRoute[];
+  contacts: SchoolContact[];
+};
+
+export type SchoolFormData = {
+  name: string;
+  district: string;
+  address: string;
+  cep?: string | null;
+  street?: string | null;
+  number?: string | null;
+  city?: string | null;
+  state?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  students: number;
+  capacity: number;
+  routes: number;
+  shift: string;
+  manager: string;
+  phone: string;
+  notes: string;
+};
+
+export const SCHOOL_SEED: SchoolDetail[] = [
+  {
+    id: 'emef-vale-azul',
+    name: 'EMEF Vale Azul',
+    district: 'Zona Norte',
+    address: 'Rua das Flores, 120',
+    students: 480,
+    capacity: 520,
+    routes: 4,
+    status: 'Ativa',
+    tone: '',
+    shift: 'Manha e tarde',
+    pickupWindow: '06:30 - 07:15',
+    dropoffWindow: '12:10 - 12:45',
+    manager: 'Marina Souza',
+    phone: '(11) 97222-1010',
+    notes: 'Coordenação solicita monitor extra nas rotas 2 e 3.',
+    routeList: [
+      { name: 'Rota Norte A', schedule: '06:40 - 07:25', status: 'No prazo', tone: '' },
+      { name: 'Rota Norte B', schedule: '06:55 - 07:35', status: 'Atenção', tone: 'warning' },
+      { name: 'Rota Norte C', schedule: '07:10 - 07:50', status: 'Crítico', tone: 'danger' },
+    ],
+    contacts: [
+      { role: 'Diretora', name: 'Marina Souza', phone: '(11) 97222-1010' },
+      { role: 'Secretaria', name: 'Paula Lins', phone: '(11) 94321-4455' },
+      { role: 'Motorista referência', name: 'Carlos Lima', phone: '(11) 98888-2233' },
+    ],
+  },
+  {
+    id: 'colegio-horizonte',
+    name: 'Colégio Horizonte',
+    district: 'Centro',
+    address: 'Av. Central, 450',
+    students: 390,
+    capacity: 410,
+    routes: 3,
+    status: 'Revisão',
+    tone: 'warning',
+    shift: 'Manha',
+    pickupWindow: '06:20 - 06:55',
+    dropoffWindow: '11:50 - 12:20',
+    manager: 'Luciana Prado',
+    phone: '(11) 93444-3321',
+    notes: 'Atualizar lista de alunos prioritários até sexta-feira.',
+    routeList: [
+      { name: 'Centro 01', schedule: '06:15 - 06:50', status: 'No prazo', tone: '' },
+      { name: 'Centro 02', schedule: '06:30 - 07:05', status: 'Atenção', tone: 'warning' },
+    ],
+    contacts: [
+      { role: 'Diretora', name: 'Luciana Prado', phone: '(11) 93444-3321' },
+      { role: 'Secretaria', name: 'Juliana Reis', phone: '(11) 95555-9090' },
+    ],
+  },
+  {
+    id: 'escola-monte-verde',
+    name: 'Escola Monte Verde',
+    district: 'Zona Sul',
+    address: 'Rua do Bosque, 980',
+    students: 260,
+    capacity: 300,
+    routes: 2,
+    status: 'Pendente',
+    tone: 'danger',
+    shift: 'Tarde',
+    pickupWindow: '12:40 - 13:10',
+    dropoffWindow: '17:40 - 18:10',
+    manager: 'Renata Gomes',
+    phone: '(11) 96677-2211',
+    notes: 'Ajustar ponto de parada principal para portaria sul.',
+    routeList: [
+      { name: 'Sul 01', schedule: '12:35 - 13:15', status: 'No prazo', tone: '' },
+      { name: 'Sul 02', schedule: '12:50 - 13:25', status: 'Crítico', tone: 'danger' },
+    ],
+    contacts: [
+      { role: 'Diretora', name: 'Renata Gomes', phone: '(11) 96677-2211' },
+      { role: 'Coordenação', name: 'Fábio Neves', phone: '(11) 92222-3030' },
+    ],
+  },
+  {
+    id: 'centro-saber',
+    name: 'Centro Saber',
+    district: 'Zona Leste',
+    address: 'Rua Horizonte, 55',
+    students: 310,
+    capacity: 330,
+    routes: 3,
+    status: 'Ativa',
+    tone: '',
+    shift: 'Manha e tarde',
+    pickupWindow: '06:45 - 07:20',
+    dropoffWindow: '12:20 - 12:55',
+    manager: 'Paulo Reis',
+    phone: '(11) 97777-1111',
+    notes: 'Equipe solicita ajuste de tempo para alunos com mobilidade reduzida.',
+    routeList: [
+      { name: 'Leste 01', schedule: '06:40 - 07:15', status: 'No prazo', tone: '' },
+      { name: 'Leste 02', schedule: '06:55 - 07:25', status: 'No prazo', tone: '' },
+    ],
+    contacts: [
+      { role: 'Diretor', name: 'Paulo Reis', phone: '(11) 97777-1111' },
+      { role: 'Secretaria', name: 'Letícia Ramos', phone: '(11) 90000-4444' },
+    ],
+  },
+  {
+    id: 'escola-integra',
+    name: 'Escola Íntegra',
+    district: 'Zona Oeste',
+    address: 'Av. Oeste, 700',
+    students: 420,
+    capacity: 460,
+    routes: 4,
+    status: 'Ativa',
+    tone: '',
+    shift: 'Integral',
+    pickupWindow: '06:10 - 06:45',
+    dropoffWindow: '16:40 - 17:20',
+    manager: 'Bianca Lopes',
+    phone: '(11) 94444-7788',
+    notes: 'Planejar rota extra para aulas esportivas.',
+    routeList: [
+      { name: 'Oeste 01', schedule: '06:05 - 06:40', status: 'No prazo', tone: '' },
+      { name: 'Oeste 02', schedule: '06:20 - 06:50', status: 'Atenção', tone: 'warning' },
+    ],
+    contacts: [
+      { role: 'Diretora', name: 'Bianca Lopes', phone: '(11) 94444-7788' },
+      { role: 'Secretaria', name: 'Lívia Maia', phone: '(11) 93333-1100' },
+    ],
+  },
+];
+
+export const toSchoolSummary = (school: SchoolDetail): SchoolSummary => ({
+  id: school.id,
+  name: school.name,
+  district: school.district,
+  address: school.address,
+  students: school.students,
+  routes: school.routes,
+  status: school.status,
+  tone: school.tone,
+});

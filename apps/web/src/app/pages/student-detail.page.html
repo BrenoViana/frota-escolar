@@ -1,0 +1,86 @@
+<section class="page" *ngIf="student$ | async as student; else notFound">
+  <div class="page-head">
+    <div>
+      <h2>{{ student.name }}</h2>
+      <p>{{ student.schoolName }} - {{ student.routeName || 'Sem rota' }}</p>
+    </div>
+    <div class="page-actions">
+      <button class="ghost" [routerLink]="['/alunos']">Voltar</button>
+      <button class="primary" [routerLink]="['/alunos', student.id, 'editar']">
+        Editar aluno
+      </button>
+      <button class="ghost" [routerLink]="['/escolas', student.schoolId]">
+        Ver escola
+      </button>
+      <button class="ghost" *ngIf="student.routeId" [routerLink]="['/rotas', student.routeId]">
+        Ver rota
+      </button>
+      <button class="ghost danger" type="button" [disabled]="deleting" (click)="confirmDelete(student.id)">
+        Excluir
+      </button>
+    </div>
+  </div>
+
+  <div class="notice error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="status-pill" *ngIf="deleting">Excluindo aluno...</div>
+
+  <div class="stats-grid">
+    <article class="card stat-card">
+      <div class="stat-label">Status</div>
+      <div class="stat-value">
+        <span class="badge" [ngClass]="statusClass(student.status)">{{ student.status | statusLabel }}</span>
+      </div>
+      <div class="stat-meta">{{ student.shift | shiftLabel }}</div>
+    </article>
+    <article class="card stat-card">
+      <div class="stat-label">Rota</div>
+      <div class="stat-value">{{ student.routeName || 'Sem rota' }}</div>
+      <div class="stat-meta">Turno {{ student.shift | shiftLabel }}</div>
+    </article>
+    <article class="card stat-card">
+      <div class="stat-label">Responsavel</div>
+      <div class="stat-value">{{ student.guardian || 'Não informado' }}</div>
+      <div class="stat-meta">{{ student.phone || 'Sem telefone' }}</div>
+    </article>
+    <article class="card stat-card">
+      <div class="stat-label">Escola</div>
+      <div class="stat-value">{{ student.schoolName }}</div>
+      <div class="stat-meta">{{ student.schoolId }}</div>
+    </article>
+    <article class="card stat-card">
+      <div class="stat-label">Entrada na escola</div>
+      <div class="stat-value">{{ student.entryTime || 'Não informado' }}</div>
+      <div class="stat-meta">Horário previsto</div>
+    </article>
+  </div>
+
+  <div class="two-col">
+    <article class="card list-card">
+      <div class="card-head">
+        <h3>Endereço</h3>
+      </div>
+      <p class="list-sub">{{ student.address || 'Endereço não informado.' }}</p>
+    </article>
+
+    <article class="card list-card">
+      <div class="card-head">
+        <h3>Observações</h3>
+      </div>
+      <p class="list-sub">{{ student.notes || 'Sem observações adicionais.' }}</p>
+    </article>
+  </div>
+</section>
+
+<ng-template #notFound>
+  <section class="page">
+    <div class="page-head">
+      <div>
+        <h2>Aluno não encontrado</h2>
+        <p>Verifique o código do aluno ou volte para a lista.</p>
+      </div>
+      <div class="page-actions">
+        <button class="primary" [routerLink]="['/alunos']">Voltar para alunos</button>
+      </div>
+    </div>
+  </section>
+</ng-template>
