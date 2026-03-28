@@ -1,0 +1,63 @@
+<section class="page" *ngIf="vehicle$ | async as vehicle; else notFound">
+  <div class="page-head">
+    <div>
+      <h2>{{ vehicle.plate }}</h2>
+      <p>{{ vehicle.model }} - {{ vehicle.capacity }} lugares</p>
+    </div>
+    <div class="page-actions">
+      <button class="ghost" [routerLink]="['/veiculos']">Voltar</button>
+      <button class="primary" [routerLink]="['/veiculos', vehicle.id, 'editar']">
+        Editar veículo
+      </button>
+      <button class="ghost" *ngIf="vehicle.routeId" [routerLink]="['/rotas', vehicle.routeId]">
+        Ver rota
+      </button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <article class="card stat-card">
+      <div class="stat-label">Status</div>
+      <div class="stat-value">
+        <span class="badge" [ngClass]="statusClass(vehicle.status)">{{ vehicle.status | statusLabel }}</span>
+      </div>
+      <div class="stat-meta">Operação</div>
+    </article>
+    <article class="card stat-card">
+      <div class="stat-label">Rota alocada</div>
+      <div class="stat-value">{{ vehicle.routeName || 'Sem alocação' }}</div>
+      <div class="stat-meta">{{ vehicle.schoolName || 'Nenhuma escola vinculada' }}</div>
+    </article>
+    <article class="card stat-card">
+      <div class="stat-label">Capacidade</div>
+      <div class="stat-value">{{ vehicle.capacity }}</div>
+      <div class="stat-meta">Lugares totais</div>
+    </article>
+    <article class="card stat-card">
+      <div class="stat-label">Modelo</div>
+      <div class="stat-value">{{ vehicle.model }}</div>
+      <div class="stat-meta">Frota escolar</div>
+    </article>
+  </div>
+
+  <article class="card list-card">
+    <div class="card-head">
+      <h3>Observações</h3>
+    </div>
+    <p class="list-sub">{{ vehicle.notes || 'Sem observações adicionais.' }}</p>
+  </article>
+</section>
+
+<ng-template #notFound>
+  <section class="page">
+    <div class="page-head">
+      <div>
+        <h2>Veículo não encontrado</h2>
+        <p>Verifique o código do veículo ou volte para a lista.</p>
+      </div>
+      <div class="page-actions">
+        <button class="primary" [routerLink]="['/veiculos']">Voltar para veículos</button>
+      </div>
+    </div>
+  </section>
+</ng-template>

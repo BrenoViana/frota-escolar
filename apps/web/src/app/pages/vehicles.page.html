@@ -1,0 +1,76 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h2>Veículos</h2>
+      <p>Cadastre veículos e acompanhe alocações por rota.</p>
+    </div>
+    <div class="page-actions">
+      <button class="ghost">Importar</button>
+      <button class="ghost" type="button" [disabled]="selectedCount === 0" (click)="deleteSelected()">
+        Excluir selecionados
+      </button>
+      <button class="primary" [routerLink]="['/veiculos', 'novo']">Novo veículo</button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="filters-left">
+      <span class="chip active">Todos</span>
+      <span class="chip">Ativos</span>
+      <span class="chip">Disponíveis</span>
+    </div>
+    <button class="ghost">Exportar</button>
+  </div>
+
+  <article class="card">
+    <div class="status-pill" *ngIf="loading">Carregando veículos...</div>
+    <div class="notice error" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>
+            <input
+              type="checkbox"
+              [checked]="allSelected(vehicles)"
+              (change)="toggleAll(vehicles)"
+              aria-label="Selecionar todos"
+            >
+          </th>
+          <th>Veículo</th>
+          <th>Capacidade</th>
+          <th>Rota</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let vehicle of vehicles">
+          <td>
+            <input
+              type="checkbox"
+              [checked]="isSelected(vehicle.id)"
+              (change)="toggleSelection(vehicle.id)"
+              aria-label="Selecionar veículo"
+            >
+          </td>
+          <td>
+            <div class="list-title">{{ vehicle.plate }}</div>
+            <div class="subtext">{{ vehicle.model }}</div>
+          </td>
+          <td>{{ vehicle.capacity }} lugares</td>
+          <td>{{ vehicle.routeName || 'Sem alocação' }}</td>
+          <td>
+            <span class="badge" [ngClass]="statusClass(vehicle.status)">
+              {{ vehicle.status | statusLabel }}
+            </span>
+          </td>
+          <td>
+            <button class="ghost tiny" [routerLink]="['/veiculos', vehicle.id]">Ver</button>
+            <button class="ghost tiny" [routerLink]="['/veiculos', vehicle.id, 'editar']">Editar</button>
+            <button class="ghost tiny" type="button" (click)="deleteVehicle(vehicle)">Excluir</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </article>
+</section>

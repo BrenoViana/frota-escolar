@@ -1,0 +1,240 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h2>{{ isEdit ? 'Editar escola' : 'Cadastro de escola' }}</h2>
+      <p *ngIf="!isEdit">Preencha os dados basicos para habilitar rotas e alunos.</p>
+      <p *ngIf="isEdit">Atualize as informações principais da escola.</p>
+    </div>
+    <div class="page-actions">
+      <button class="ghost" [routerLink]="['/escolas']">Cancelar</button>
+      <button
+        class="primary"
+        type="submit"
+        form="school-form"
+        [disabled]="saving || loading"
+      >
+        {{ isEdit ? 'Salvar alterações' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="notice error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="status-pill" *ngIf="loading">Carregando dados da escola...</div>
+
+  <div class="two-col">
+    <article class="card">
+      <form id="school-form" class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <fieldset class="form-section">
+          <legend>Dados da escola</legend>
+          <div class="form-grid">
+            <div class="field">
+              <label class="required">Nome da escola</label>
+              <input formControlName="name" placeholder="Ex: EMEF Vale Azul">
+              <small class="error" *ngIf="form.controls.name.touched && form.controls.name.invalid">
+                Informe um nome válido.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Turno principal</label>
+              <select formControlName="shift">
+                <option *ngFor="let shift of shifts" [value]="shift">{{ shift | shiftLabel }}</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="required">Alunos cadastrados</label>
+              <input type="number" formControlName="students" min="0">
+              <small class="error" *ngIf="form.controls.students.touched && form.controls.students.invalid">
+                Informe o numero de alunos.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Capacidade estimada</label>
+              <input type="number" formControlName="capacity" min="0">
+              <small class="error" *ngIf="form.controls.capacity.touched && form.controls.capacity.invalid">
+                Informe a capacidade.
+              </small>
+            </div>
+
+            <div class="field">
+              <label>Rotas vinculadas</label>
+              <input type="number" formControlName="routes" min="0">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>Endereço</legend>
+          <div class="form-grid">
+            <div class="field">
+              <label class="required">CEP</label>
+              <input formControlName="cep" placeholder="00000-000">
+              <small class="error" *ngIf="form.controls.cep.touched && form.controls.cep.invalid">
+                {{
+                  form.controls.cep.errors?.['cep']
+                    ? 'CEP inválido.'
+                    : 'Informe o CEP.'
+                }}
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Numero</label>
+              <input formControlName="number" placeholder="120">
+              <small class="error" *ngIf="form.controls.number.touched && form.controls.number.invalid">
+                Informe o numero.
+              </small>
+            </div>
+
+            <div class="field full">
+              <label class="required">Rua</label>
+              <input formControlName="street" placeholder="Rua das Flores">
+              <small class="error" *ngIf="form.controls.street.touched && form.controls.street.invalid">
+                Informe a rua.
+              </small>
+            </div>
+
+            <div class="field full">
+              <label class="required">Bairro</label>
+              <input formControlName="district" placeholder="Centro">
+              <small class="error" *ngIf="form.controls.district.touched && form.controls.district.invalid">
+                Informe o bairro.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Cidade</label>
+              <input formControlName="city" placeholder="Sao Paulo">
+              <small class="error" *ngIf="form.controls.city.touched && form.controls.city.invalid">
+                Informe a cidade.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">UF</label>
+              <input formControlName="state" placeholder="SP" maxlength="2">
+              <small class="error" *ngIf="form.controls.state.touched && form.controls.state.invalid">
+                Informe a UF.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Lat</label>
+              <input type="number" step="0.00000001" formControlName="lat" placeholder="-23.5">
+              <small class="error" *ngIf="form.controls.lat.touched && form.controls.lat.invalid">
+                {{
+                  form.controls.lat.errors?.['latRange']
+                    ? 'Latitude fora do intervalo (-90 a 90).'
+                    : 'Informe a latitude.'
+                }}
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Long</label>
+              <input type="number" step="0.00000001" formControlName="lng" placeholder="-46.6">
+              <small class="error" *ngIf="form.controls.lng.touched && form.controls.lng.invalid">
+                {{
+                  form.controls.lng.errors?.['lngRange']
+                    ? 'Longitude fora do intervalo (-180 a 180).'
+                    : 'Informe a longitude.'
+                }}
+              </small>
+            </div>
+
+            <div class="field full" *ngIf="geoLoading">
+              <small class="status-pill">Buscando endereço...</small>
+            </div>
+
+            <div class="field full" *ngIf="geoMessage">
+              <small class="error">{{ geoMessage }}</small>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>Contato</legend>
+          <div class="form-grid">
+            <div class="field">
+              <label class="required">Responsavel</label>
+              <input formControlName="manager" placeholder="Nome da diretora">
+              <small class="error" *ngIf="form.controls.manager.touched && form.controls.manager.invalid">
+                Informe o responsavel.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Telefone</label>
+              <input formControlName="phone" placeholder="(11) 90000-0000">
+              <small class="error" *ngIf="form.controls.phone.touched && form.controls.phone.invalid">
+                Informe um telefone.
+              </small>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>Observações</legend>
+          <div class="form-grid">
+            <div class="field full">
+              <label>Observações</label>
+              <textarea rows="4" formControlName="notes" placeholder="Notas operacionais"></textarea>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <button class="ghost" type="button" [routerLink]="['/escolas']">Cancelar</button>
+          <button class="primary" type="submit" [disabled]="saving">
+            {{ isEdit ? 'Salvar alterações' : 'Salvar escola' }}
+          </button>
+        </div>
+      </form>
+    </article>
+
+    <article class="card list-card">
+      <div class="card-head">
+      <h3>Checklist rápido</h3>
+        <button class="ghost tiny">Ver politica</button>
+      </div>
+      <ul class="list">
+        <li>
+          <div>
+            <div class="list-title">Geolocalizacao</div>
+            <div class="list-sub">Adicionar coordenadas para calculo de rotas.</div>
+          </div>
+          <span class="badge">Pendente</span>
+        </li>
+        <li>
+          <div>
+            <div class="list-title">Lista de alunos</div>
+            <div class="list-sub">Importar alunos ativos e pontos de parada.</div>
+          </div>
+          <span class="badge warning">Revisao</span>
+        </li>
+        <li>
+          <div>
+            <div class="list-title">Equipe escolar</div>
+            <div class="list-sub">Definir contatos e responsaveis.</div>
+          </div>
+          <span class="badge">Ok</span>
+        </li>
+      </ul>
+
+      <div class="notice" *ngIf="saved">
+        <strong>
+          {{
+            useApi
+              ? (isEdit ? 'Alteracoes salvas no backend.' : 'Cadastro salvo no backend.')
+              : (isEdit ? 'Alteracoes salvas localmente.' : 'Cadastro salvo localmente.')
+          }}
+        </strong>
+        <p class="list-sub" *ngIf="useApi">Dados persistidos e prontos para consulta.</p>
+        <p class="list-sub" *ngIf="!useApi">Conecte ao backend para persistir de verdade.</p>
+        <div class="pill">{{ lastSavedName || form.value.name || 'Nova escola' }}</div>
+      </div>
+    </article>
+  </div>
+</section>

@@ -1,0 +1,68 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h2>Dashboard operacional</h2>
+      <p>Panorama rápido das rotas e escolas atendidas hoje.</p>
+    </div>
+    <div class="page-actions">
+      <button class="ghost">Baixar relatório</button>
+      <button class="primary">Planejar rotas</button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <article class="card stat-card" *ngFor="let stat of (stats$ | async) ?? []">
+      <div class="stat-label">{{ stat.label }}</div>
+      <div class="stat-value">{{ stat.value }}</div>
+      <div class="stat-meta">{{ stat.meta }}</div>
+    </article>
+  </div>
+
+  <div class="two-col">
+    <article class="card list-card">
+      <div class="card-head">
+        <h3>Rotas do dia</h3>
+        <button class="ghost tiny">Ver todas</button>
+      </div>
+      <ul class="list">
+        <li *ngFor="let route of routes">
+          <div>
+            <div class="list-title">{{ route.name }}</div>
+            <div class="list-sub">{{ route.meta }}</div>
+          </div>
+          <span class="badge" [ngClass]="route.tone">{{ route.status | statusLabel }}</span>
+        </li>
+      </ul>
+    </article>
+
+    <article class="card list-card">
+      <div class="card-head">
+        <h3>Alertas</h3>
+        <button class="ghost tiny">Resolver</button>
+      </div>
+      <ul class="list">
+        <li *ngFor="let alert of alerts">
+          <div>
+            <div class="list-title">{{ alert.title }}</div>
+            <div class="list-sub">{{ alert.meta }}</div>
+          </div>
+          <span class="badge" [ngClass]="alert.tone">{{ alert.tone ? 'Atenção' : 'Info' }}</span>
+        </li>
+      </ul>
+    </article>
+  </div>
+
+  <article class="card list-card">
+    <div class="card-head">
+      <h3>Escolas com maior demanda</h3>
+      <button class="ghost tiny">Detalhar</button>
+    </div>
+    <div class="bar-list">
+      <div class="bar-row" *ngFor="let item of demand">
+        <div class="list-title">{{ item.name }}</div>
+        <div class="bar"><span [style.width.%]="item.value"></span></div>
+        <div class="list-sub">{{ item.students }} alunos</div>
+      </div>
+    </div>
+  </article>
+</section>

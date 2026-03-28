@@ -1,0 +1,97 @@
+:host {
+  display: block;
+}
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 12px 0 16px;
+  border-bottom: 1px dashed rgba(215, 201, 184, 0.7);
+  margin-bottom: 16px;
+}
+
+.list-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: #6e5b4f;
+}
+
+.route-block {
+  padding: 12px 0;
+  border-top: 1px solid rgba(215, 201, 184, 0.5);
+}
+
+.route-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.map-legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #6e5b4f;
+  margin-top: 12px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.legend-dot.start {
+  background: #2f9e44;
+}
+
+.legend-dot.pickup {
+  background: #2b6cb0;
+}
+
+.legend-dot.delivery {
+  background: #d96a3b;
+}
+
+.legend-dot.end {
+  background: #6c757d;
+}
+
+.stop-marker span {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.map-panel {
+  margin-top: 16px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(215, 201, 184, 0.6);
+}
+
+.map-canvas {
+  width: 100%;
+  height: 320px;
+}
+
+@media (max-width: 700px) {
+  .map-canvas {
+    height: 240px;
+  }
+}

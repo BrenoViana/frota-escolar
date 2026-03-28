@@ -1,2 +1,13 @@
-# web (Angular + Vite)
-Inicialize com: `npm create @angular@latest` (ou `ng new`) e ajuste para Vite se preferir.
+# web (Angular)
+Base frontend com Dashboard e Escolas.
+
+Rotas:
+- /dashboard
+- /escolas
+- /escolas/nova
+- /escolas/:id
+- /escolas/:id/editar
+
+Para rodar depois:
+- npm install
+- npm start

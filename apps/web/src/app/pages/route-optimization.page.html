@@ -1,0 +1,273 @@
+<section class="page" *ngIf="vm$ | async as vm; else loadingTpl">
+  <div class="page-head">
+    <div>
+      <h2>Otimização de rota</h2>
+      <p *ngIf="vm.route">Rota: {{ vm.route.name }} • {{ vm.route.schoolName || 'Sem escolas' }}</p>
+      <p *ngIf="!vm.route">Defina garagem e alunos para calcular a melhor sequência de coleta e entrega.</p>
+    </div>
+    <div class="page-actions">
+      <button class="ghost" [routerLink]="['/rotas', routeId]">Voltar</button>
+    </div>
+  </div>
+
+  <div class="notice error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="two-col">
+    <article class="card">
+      <div class="card-head">
+        <h3>Garagem e alunos</h3>
+        <span class="badge">{{ selectedCount }} selecionados</span>
+      </div>
+
+      <form class="form" [formGroup]="form" (ngSubmit)="optimize()">
+        <div class="form-grid">
+          <div class="field">
+            <label>Endereço da garagem (opcional)</label>
+            <input formControlName="garageAddress" placeholder="Rua, número, cidade">
+            <small class="list-sub">Se vazio, usamos a garagem do veículo selecionado.</small>
+          </div>
+
+          <div class="field">
+            <label>Latitude (opcional)</label>
+            <input type="number" step="0.00000001" formControlName="garageLat" placeholder="-23.5">
+          </div>
+
+          <div class="field">
+            <label>Longitude (opcional)</label>
+            <input type="number" step="0.00000001" formControlName="garageLng" placeholder="-46.6">
+          </div>
+
+          <div class="field">
+            <label>Saída prevista</label>
+            <input formControlName="departAt" placeholder="06:00">
+          </div>
+        </div>
+
+        <div class="notice warning" *ngIf="hasManualGarage">
+          Coordenadas/endereço informados manualmente. Isso substitui a garagem do veículo.
+          <button type="button" class="ghost tiny" (click)="clearGarageFields()">
+            Usar garagem do veículo
+          </button>
+        </div>
+
+        <div class="field">
+          <label>Alunos para otimizar</label>
+          <div class="list-actions">
+            <button type="button" class="ghost tiny" (click)="selectAll()" [disabled]="allSelected">
+              Selecionar todos
+            </button>
+            <button type="button" class="ghost tiny" (click)="clearSelection()" [disabled]="!selectedCount">
+              Limpar
+            </button>
+          </div>
+          <div class="selection-list" *ngIf="vm.students.length; else emptyStudents">
+            <label class="check-item" *ngFor="let student of vm.students">
+              <input
+                type="checkbox"
+                [checked]="isSelected(student.id)"
+                (change)="toggleStudent(student.id)"
+              >
+              <div>
+                <div class="list-title">{{ student.name }}</div>
+                <div class="list-sub">{{ student.schoolName }}</div>
+              </div>
+            </label>
+          </div>
+          <ng-template #emptyStudents>
+            <div class="status-pill">Nenhum aluno encontrado.</div>
+          </ng-template>
+        </div>
+
+        <div class="field">
+          <label>Veículos para otimizar</label>
+          <div class="list-actions">
+            <button type="button" class="ghost tiny" (click)="selectAllVehicles()" [disabled]="allVehiclesSelected">
+              Selecionar todos
+            </button>
+            <button type="button" class="ghost tiny" (click)="clearVehicles()" [disabled]="!selectedVehicleCount">
+              Limpar
+            </button>
+          </div>
+          <div class="selection-list" *ngIf="vm.vehicles.length; else emptyVehicles">
+            <label class="check-item" *ngFor="let vehicle of vm.vehicles">
+              <input
+                type="checkbox"
+                [checked]="isVehicleSelected(vehicle.id)"
+                (change)="toggleVehicle(vehicle.id)"
+              >
+              <div>
+                <div class="list-title">{{ vehicle.plate }} - {{ vehicle.model }}</div>
+                <div class="list-sub">Capacidade {{ vehicle.capacity }} alunos</div>
+              </div>
+            </label>
+          </div>
+          <ng-template #emptyVehicles>
+            <div class="status-pill">Nenhum veículo cadastrado.</div>
+          </ng-template>
+          <small class="hint">Se não selecionar veículos, a otimização usa o veículo da rota ou a capacidade padrão.</small>
+        </div>
+
+        <div class="form-actions">
+          <button class="primary" type="submit" [disabled]="loading">Otimizar</button>
+        </div>
+      </form>
+    </article>
+
+    <article class="card list-card result-card">
+      <div class="card-head">
+        <div>
+          <h3>Resultado</h3>
+          <p class="card-sub" *ngIf="result">
+            Resumo da melhor sequência para os alunos selecionados.
+          </p>
+        </div>
+        <div class="card-actions">
+          <button
+            class="ghost tiny"
+            type="button"
+            *ngIf="result"
+            (click)="toggleMap()"
+          >
+            {{ showMap ? 'Ocultar mapa' : 'Ver mapa' }}
+          </button>
+          <button
+            class="ghost tiny"
+            type="button"
+            *ngIf="result && !editing"
+            (click)="startEdit()"
+          >
+            Editar sequência
+          </button>
+          <button
+            class="ghost tiny"
+            type="button"
+            *ngIf="editing"
+            (click)="cancelEdit()"
+          >
+            Cancelar
+          </button>
+          <button
+            class="primary tiny"
+            type="button"
+            *ngIf="editing"
+            [disabled]="saving"
+            (click)="saveEdit()"
+          >
+            Salvar ajustes
+          </button>
+          <span class="badge success" *ngIf="showUpdatedBadge">Atualizado</span>
+          <span class="badge warning" *ngIf="showEstimateBadge">Estimativa</span>
+          <span class="badge" *ngIf="result">Simulação</span>
+        </div>
+      </div>
+
+      <div class="status-pill" *ngIf="loading">Calculando rota otimizada...</div>
+      <div class="status-pill" *ngIf="recalculating">Recalculando distâncias reais...</div>
+      <div class="status-pill" *ngIf="!loading && !result">Nenhuma simulação rodada.</div>
+
+      <div *ngIf="result">
+        <div class="summary-cards">
+          <div class="summary-card">
+            <div class="summary-label">Distância total</div>
+            <div class="summary-value">{{ totalDistance(result) | number:'1.1-1' }} km</div>
+            <div class="summary-meta">{{ result.routes.length }} veículo(s)</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Duração total</div>
+            <div class="summary-value">{{ totalDuration(result) | number:'1.0-0' }} min</div>
+            <div class="summary-meta">Inclui embarque/desembarque</div>
+          </div>
+        </div>
+
+        <div class="notice warning" *ngIf="result.warnings?.length">
+          <strong>Atenção:</strong>
+          <div *ngFor="let warning of result.warnings">{{ warning }}</div>
+        </div>
+
+        <div class="plan-card" *ngFor="let plan of result.routes; let planIndex = index">
+          <div class="plan-header">
+            <div>
+              <div class="plan-title">Veículo {{ planIndex + 1 }}</div>
+              <div class="plan-sub">{{ plan.vehicleLabel || 'Sem veículo definido' }}</div>
+            </div>
+            <div class="plan-chips">
+              <span class="chip">{{ plan.vehicleStatus ? (plan.vehicleStatus | statusLabel) : 'Sem status' }}</span>
+              <span class="chip">{{ plan.assignedStudents ?? 0 }}/{{ plan.vehicleCapacity ?? '-' }} alunos</span>
+              <span class="chip ghost">{{ plan.totalDistanceKm | number:'1.1-1' }} km</span>
+              <span class="chip ghost">{{ planDuration(plan) | number:'1.0-0' }} min</span>
+            </div>
+          </div>
+
+          <ul class="stop-list">
+            <li
+              *ngFor="let stop of displayStops(plan); let stopIndex = index"
+              class="stop-card"
+              [attr.data-type]="stop.type"
+              [class.draggable]="isDraggableStop(stop)"
+              [class.dragging]="isDragging(planIndex, stopIndex)"
+              [class.drag-over]="isDragOver(planIndex, stopIndex)"
+              [class.drag-over-before]="isDragOverBefore(planIndex, stopIndex)"
+              [class.drag-over-after]="isDragOverAfter(planIndex, stopIndex)"
+              [attr.draggable]="isDraggableStop(stop) ? true : null"
+              (dragstart)="onDragStart(planIndex, stopIndex, $event)"
+              (dragover)="onDragOver(planIndex, stopIndex, $event)"
+              (drop)="onDrop(planIndex, stopIndex, $event)"
+              (dragend)="onDragEnd()"
+            >
+              <div class="stop-main">
+                <div class="stop-head">
+                  <span class="stop-index">{{ stop.sequence }}</span>
+                  <div class="stop-title">{{ stop.label }}</div>
+                  <span class="stop-chip" [ngClass]="stop.type">{{ stopChipLabel(stop.type) }}</span>
+                </div>
+                <div class="stop-meta">
+                  <span *ngIf="stop.groupedStudents?.length">
+                    Alunos: {{ stop.groupedStudents.join(', ') }}
+                  </span>
+                  <span *ngIf="!stop.groupedStudents?.length && stop.studentName">
+                    Aluno: {{ stop.studentName }}
+                  </span>
+                  <span *ngIf="stop.schoolName">Escola: {{ stop.schoolName }}</span>
+                  <span *ngIf="stop.address">Endereço: {{ stop.address }}</span>
+                  <span *ngIf="stop.arrival">Chegada prevista: {{ stop.arrival }}</span>
+                </div>
+              </div>
+              <div class="stop-metrics">
+                <span *ngIf="stop.distanceKm !== undefined">{{ stop.distanceKm | number:'1.1-1' }} km</span>
+                <span *ngIf="stop.durationMin !== undefined">{{ stop.durationMin | number:'1.0-0' }} min</span>
+                <span class="drag-handle" *ngIf="editing && isDraggableStop(stop)">arrastar</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </article>
+  </div>
+
+  <div class="map-modal" *ngIf="result && showMap">
+    <div class="map-backdrop" (click)="toggleMap()"></div>
+    <div class="map-dialog">
+      <div class="map-header">
+        <div>
+          <div class="list-title">Mapa da rota</div>
+          <div class="list-sub">Visualize a sequência otimizada no mapa.</div>
+        </div>
+        <div class="map-legend">
+          <span class="legend-item"><span class="legend-dot start"></span>Garagem</span>
+          <span class="legend-item"><span class="legend-dot pickup"></span>Coleta</span>
+          <span class="legend-item"><span class="legend-dot delivery"></span>Entrega</span>
+          <span class="legend-item"><span class="legend-dot end"></span>Retorno</span>
+        </div>
+        <button class="ghost tiny" type="button" (click)="toggleMap()">Fechar</button>
+      </div>
+      <div class="map-canvas" #mapContainer></div>
+    </div>
+  </div>
+</section>
+
+<ng-template #loadingTpl>
+  <section class="page">
+    <div class="status-pill">Carregando dados da otimização...</div>
+  </section>
+</ng-template>
