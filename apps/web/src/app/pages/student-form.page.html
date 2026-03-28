@@ -1,0 +1,258 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h2>{{ isEdit ? 'Editar aluno' : 'Cadastro de aluno' }}</h2>
+      <p *ngIf="isEdit">Atualize os dados principais do aluno.</p>
+    </div>
+    <div class="page-actions">
+      <button class="ghost" [routerLink]="['/alunos']">Cancelar</button>
+      <button
+        class="primary"
+        type="submit"
+        form="student-form"
+        [disabled]="saving || loading"
+      >
+        {{ isEdit ? 'Salvar alterações' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="notice error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="status-pill" *ngIf="loading">Carregando dados do aluno...</div>
+
+  <div class="two-col">
+    <article class="card">
+      <form id="student-form" class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <fieldset class="form-section">
+          <legend>Dados do aluno</legend>
+          <div class="form-grid">
+            <div class="field">
+              <label class="required">Nome do aluno</label>
+              <input formControlName="name" placeholder="Ex: Ana Souza">
+              <small class="error" *ngIf="form.controls.name.touched && form.controls.name.invalid">
+                Informe um nome válido.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Escola</label>
+              <select formControlName="schoolId">
+                <option value="">Selecione</option>
+                <option *ngFor="let school of (schools$ | async) ?? []" [value]="school.id">
+                  {{ school.name }}
+                </option>
+              </select>
+              <small class="error" *ngIf="form.controls.schoolId.touched && form.controls.schoolId.invalid">
+                Selecione uma escola.
+              </small>
+            </div>
+
+            <div class="field">
+              <label>Rota (opcional)</label>
+              <select formControlName="routeName">
+                <option value="">Sem rota definida</option>
+                <option *ngFor="let route of routeOptions" [value]="route.name">
+                  {{ route.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="required">Turno</label>
+              <select formControlName="shift">
+                <option *ngFor="let shift of shifts" [value]="shift">{{ shift | shiftLabel }}</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="required">Status</label>
+              <select formControlName="status">
+                <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="required">Horário de entrada</label>
+              <input formControlName="entryTime" placeholder="07:00">
+              <small class="error" *ngIf="form.controls.entryTime.touched && form.controls.entryTime.invalid">
+                {{
+                  form.controls.entryTime.errors?.['required']
+                    ? 'Informe o horario de entrada.'
+                    : 'Informe um horário válido (HH:MM).'
+                }}
+              </small>
+              <small class="hint">Usado para priorizar entregas na otimização.</small>
+            </div>
+
+            <div class="field">
+              <label>Responsável</label>
+              <input formControlName="guardian" placeholder="Nome do responsável">
+            </div>
+
+            <div class="field">
+              <label>Telefone</label>
+              <input formControlName="phone" placeholder="(11) 90000-0000">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>Endereço</legend>
+          <div class="form-grid">
+            <div class="field">
+              <label class="required">CEP</label>
+              <input formControlName="cep" placeholder="00000-000">
+              <small class="error" *ngIf="form.controls.cep.touched && form.controls.cep.invalid">
+                {{
+                  form.controls.cep.errors?.['cep']
+                    ? 'CEP inválido.'
+                    : 'Informe o CEP.'
+                }}
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Número</label>
+              <input formControlName="number" placeholder="120">
+              <small class="error" *ngIf="form.controls.number.touched && form.controls.number.invalid">
+                Informe o número.
+              </small>
+            </div>
+
+            <div class="field full">
+              <label class="required">Rua</label>
+              <input formControlName="street" placeholder="Rua das Flores">
+              <small class="error" *ngIf="form.controls.street.touched && form.controls.street.invalid">
+                Informe a rua.
+              </small>
+            </div>
+
+            <div class="field full">
+              <label class="required">Bairro</label>
+              <input formControlName="district" placeholder="Centro">
+              <small class="error" *ngIf="form.controls.district.touched && form.controls.district.invalid">
+                Informe o bairro.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Cidade</label>
+              <input formControlName="city" placeholder="Sao Paulo">
+              <small class="error" *ngIf="form.controls.city.touched && form.controls.city.invalid">
+                Informe a cidade.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">UF</label>
+              <input formControlName="state" placeholder="SP" maxlength="2">
+              <small class="error" *ngIf="form.controls.state.touched && form.controls.state.invalid">
+                Informe a UF.
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Lat</label>
+              <input type="number" step="0.00000001" formControlName="lat" placeholder="-23.5">
+              <small class="error" *ngIf="form.controls.lat.touched && form.controls.lat.invalid">
+                {{
+                  form.controls.lat.errors?.['latRange']
+                    ? 'Latitude fora do intervalo (-90 a 90).'
+                    : 'Informe a latitude.'
+                }}
+              </small>
+            </div>
+
+            <div class="field">
+              <label class="required">Long</label>
+              <input type="number" step="0.00000001" formControlName="lng" placeholder="-46.6">
+              <small class="error" *ngIf="form.controls.lng.touched && form.controls.lng.invalid">
+                {{
+                  form.controls.lng.errors?.['lngRange']
+                    ? 'Longitude fora do intervalo (-180 a 180).'
+                    : 'Informe a longitude.'
+                }}
+              </small>
+            </div>
+
+            <div class="field full" *ngIf="geoLoading">
+              <small class="status-pill">Buscando endereço...</small>
+            </div>
+
+            <div class="field full" *ngIf="geoMessage">
+              <small class="error">{{ geoMessage }}</small>
+            </div>
+
+            <div class="field full" *ngIf="coordMessage">
+              <small class="error">{{ coordMessage }}</small>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+          <legend>Observações</legend>
+          <div class="form-grid">
+            <div class="field full">
+              <label>Observações</label>
+              <textarea rows="4" formControlName="notes" placeholder="Notas operacionais"></textarea>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <button class="ghost" type="button" [routerLink]="['/alunos']">Cancelar</button>
+          <button class="primary" type="submit" [disabled]="saving">
+            {{ isEdit ? 'Salvar alterações' : 'Salvar aluno' }}
+          </button>
+        </div>
+      </form>
+    </article>
+
+    <article class="card list-card">
+      <div class="card-head">
+        <h3>Resumo do vínculo</h3>
+        <span class="badge">{{ form.value.status || 'Ativo' }}</span>
+      </div>
+      <ul class="list">
+        <li>
+          <div>
+            <div class="list-title">Escola</div>
+            <div class="list-sub">{{ selectedSchoolName || 'Não selecionada' }}</div>
+          </div>
+          <span class="pill">Obrigatório</span>
+        </li>
+        <li>
+          <div>
+            <div class="list-title">Rota</div>
+            <div class="list-sub">{{ form.value.routeName || 'Sem rota definida' }}</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="list-title">Turno</div>
+            <div class="list-sub">{{ (form.value.shift || 'Manha') | shiftLabel }}</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="list-title">Entrada na escola</div>
+            <div class="list-sub">{{ form.value.entryTime || 'Usar janela da escola' }}</div>
+          </div>
+        </li>
+      </ul>
+
+      <div class="notice" *ngIf="saved">
+        <strong>
+          {{
+            useApi
+              ? (isEdit ? 'Alteracoes salvas no backend.' : 'Cadastro salvo no backend.')
+              : (isEdit ? 'Alteracoes salvas localmente.' : 'Cadastro salvo localmente.')
+          }}
+        </strong>
+        <p class="list-sub" *ngIf="useApi">Dados persistidos e prontos para consulta.</p>
+        <p class="list-sub" *ngIf="!useApi">Conecte ao backend para persistir de verdade.</p>
+        <div class="pill">{{ lastSavedName || form.value.name || 'Novo aluno' }}</div>
+      </div>
+    </article>
+  </div>
+</section>

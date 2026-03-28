@@ -1,0 +1,82 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h2>Rotas</h2>
+      <p>Planeje rotas, vincule escolas e acompanhe ocupação.</p>
+    </div>
+    <div class="page-actions">
+      <button class="ghost">Importar</button>
+      <button class="ghost" type="button" [disabled]="selectedCount === 0" (click)="deleteSelected()">
+        Excluir selecionados
+      </button>
+      <button class="primary" [routerLink]="['/rotas', 'nova']">Criar rota</button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="filters-left">
+      <span class="chip active">Todas</span>
+      <span class="chip">Ativas</span>
+      <span class="chip">Pendentes</span>
+    </div>
+    <button class="ghost">Exportar</button>
+  </div>
+
+  <article class="card">
+    <div class="status-pill" *ngIf="loading">Carregando rotas...</div>
+    <div class="notice error" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>
+            <input
+              type="checkbox"
+              [checked]="allSelected(routes)"
+              (change)="toggleAll(routes)"
+              aria-label="Selecionar todas"
+            >
+          </th>
+          <th>Rota</th>
+          <th>Escolas</th>
+          <th>Horário</th>
+          <th>Alunos</th>
+          <th>Veículo</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let route of routes">
+          <td>
+            <input
+              type="checkbox"
+              [checked]="isSelected(route.id)"
+              (change)="toggleSelection(route.id)"
+              aria-label="Selecionar rota"
+            >
+          </td>
+          <td>
+            <div class="list-title">{{ route.name }}</div>
+            <div class="subtext">{{ route.shift | shiftLabel }}</div>
+          </td>
+          <td>{{ route.schoolName || 'Sem escolas' }}</td>
+          <td>{{ route.startTime }} - {{ route.endTime }}</td>
+          <td>
+            <span class="pill">{{ route.students }} / {{ route.capacity }}</span>
+          </td>
+          <td>{{ route.vehicleLabel || 'Sem veículo' }}</td>
+          <td>
+            <span class="badge" [ngClass]="statusClass(route.status)">
+              {{ route.status | statusLabel }}
+            </span>
+          </td>
+          <td>
+            <button class="ghost tiny" [routerLink]="['/rotas', route.id]">Ver</button>
+            <button class="ghost tiny" [routerLink]="['/rotas', route.id, 'editar']">Editar</button>
+            <button class="ghost tiny" type="button" (click)="deleteRoute(route)">Excluir</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </article>
+</section>

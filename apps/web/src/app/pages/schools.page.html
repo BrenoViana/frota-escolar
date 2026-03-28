@@ -1,0 +1,90 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h2>Escolas</h2>
+      <p>Gerencie unidades atendidas e acompanhe capacidade de rotas.</p>
+    </div>
+    <div class="page-actions">
+      <button class="ghost">Importar</button>
+      <button class="ghost" type="button" [disabled]="selectedCount === 0" (click)="deleteSelected()">
+        Excluir selecionados
+      </button>
+      <button class="primary" [routerLink]="['/escolas', 'nova']">Nova escola</button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="filters-left">
+      <span class="chip active">Todas</span>
+      <span class="chip">Ativas</span>
+      <span class="chip">Pendentes</span>
+      <span class="chip">Revisao</span>
+    </div>
+    <button class="ghost">Exportar</button>
+  </div>
+
+  <article class="card">
+    <div class="status-pill" *ngIf="loading">Carregando escolas...</div>
+    <div class="notice error" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>
+            <input
+              type="checkbox"
+              [checked]="allSelected(schools)"
+              (change)="toggleAll(schools)"
+              aria-label="Selecionar todas"
+            >
+          </th>
+          <th>Nome</th>
+          <th>Bairro</th>
+          <th>Alunos</th>
+          <th>Rotas</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let school of schools">
+          <td>
+            <input
+              type="checkbox"
+              [checked]="isSelected(school.id)"
+              (change)="toggleSelection(school.id)"
+              aria-label="Selecionar escola"
+            >
+          </td>
+          <td>
+            <div class="list-title">{{ school.name }}</div>
+            <div class="subtext">Atualizado hoje</div>
+          </td>
+          <td>{{ school.district }}</td>
+          <td><span class="pill">{{ school.students }} alunos</span></td>
+          <td>{{ school.routes }}</td>
+          <td>
+            <span class="badge" [ngClass]="school.tone">{{ school.status | statusLabel }}</span>
+          </td>
+          <td>
+            <button class="ghost tiny" [routerLink]="['/escolas', school.id]">Ver</button>
+            <button class="ghost tiny" [routerLink]="['/escolas', school.id, 'editar']">Editar</button>
+            <button class="ghost tiny" type="button" (click)="deleteSchool(school)">Excluir</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </article>
+
+  <article class="card list-card">
+    <div class="card-head">
+      <h3>Indicadores rápidos</h3>
+      <button class="ghost tiny">Ajustar metas</button>
+    </div>
+    <div class="mini-grid">
+      <div class="mini-card" *ngFor="let metric of metrics">
+        <h4>{{ metric.label }}</h4>
+        <span>{{ metric.value }}</span>
+      </div>
+    </div>
+  </article>
+</section>

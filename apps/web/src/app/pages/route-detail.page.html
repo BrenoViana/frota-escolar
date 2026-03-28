@@ -1,0 +1,155 @@
+<section class="page" *ngIf="route$ | async as route; else loading">
+  <ng-container *ngIf="route; else notFound">
+  <div class="page-head">
+    <div>
+      <h2>{{ route.name }}</h2>
+      <p>{{ route.schoolName || 'Sem escolas' }} - {{ route.startTime }} - {{ route.endTime }}</p>
+    </div>
+    <div class="page-actions">
+      <button class="ghost" [routerLink]="['/rotas']">Voltar</button>
+      <button class="ghost" [routerLink]="['/rotas', route.id, 'otimizar']">
+        Otimizar
+      </button>
+      <button class="primary" [routerLink]="['/rotas', route.id, 'editar']">
+        Editar rota
+      </button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <article class="card stat-card">
+      <div class="stat-label">Status</div>
+      <div class="stat-value">
+        <span class="badge" [ngClass]="statusClass(route.status)">{{ route.status | statusLabel }}</span>
+      </div>
+      <div class="stat-meta">Turno {{ route.shift | shiftLabel }}</div>
+    </article>
+    <article class="card stat-card">
+      <div class="stat-label">Capacidade</div>
+      <div class="stat-value">{{ route.capacity }}</div>
+      <div class="stat-meta">{{ route.students }} alunos vinculados</div>
+    </article>
+    <article class="card stat-card">
+      <div class="stat-label">Veículo</div>
+      <div class="stat-value">{{ route.vehicleLabel || 'Não definido' }}</div>
+      <div class="stat-meta">Atribuição atual</div>
+    </article>
+    <article class="card stat-card">
+      <div class="stat-label">Escolas</div>
+      <div class="stat-value">{{ route.schoolName || 'Sem escolas' }}</div>
+      <div class="stat-meta">{{ route.schools?.length || 0 }} escolas</div>
+    </article>
+  </div>
+
+  <article class="card list-card">
+    <div class="card-head">
+      <h3>Alunos vinculados</h3>
+      <span class="pill">{{ route.students }} alunos</span>
+    </div>
+    <ul class="list">
+        <li *ngFor="let student of route.studentsList">
+          <div>
+            <div class="list-title">{{ student.name }}</div>
+            <div class="list-sub">{{ student.schoolName }}</div>
+            <div class="list-sub">Entrada: {{ student.entryTime || 'Não informado' }}</div>
+          </div>
+          <span class="badge" [ngClass]="statusClass(student.status)">{{ student.status | statusLabel }}</span>
+        </li>
+    </ul>
+  </article>
+
+  <article class="card list-card">
+    <div class="card-head">
+      <h3>Rota otimizada</h3>
+      <span class="pill" *ngIf="optimization?.routes?.length">Simulação salva</span>
+    </div>
+
+    <div class="status-pill" *ngIf="optimizationLoading">Carregando otimização...</div>
+    <div class="notice error" *ngIf="optimizationError">{{ optimizationError }}</div>
+    <div class="status-pill" *ngIf="!optimizationLoading && (!optimization || !optimization.routes?.length)">
+      Nenhuma otimização salva para esta rota.
+    </div>
+
+    <div *ngIf="optimization?.routes?.length">
+      <div class="kpi-row">
+        <div>
+          <div class="list-title">Distância total</div>
+          <div class="list-sub">{{ totalDistance(optimization) | number:'1.1-1' }} km</div>
+        </div>
+        <div>
+          <div class="list-title">Duração total</div>
+          <div class="list-sub">{{ totalDuration(optimization) | number:'1.0-0' }} min</div>
+        </div>
+      </div>
+
+      <div class="route-block" *ngFor="let plan of optimization.routes; let index = index">
+        <div class="route-head">
+          <div>
+            <div class="list-title">Veículo {{ index + 1 }}</div>
+              <div class="list-sub">{{ plan.vehicleLabel || 'Sem veículo definido' }}</div>
+            <div class="list-sub" *ngIf="plan.vehicleStatus || plan.vehicleCapacity">
+              {{ plan.vehicleStatus ? (plan.vehicleStatus | statusLabel) : 'Sem status' }} •
+              {{ plan.assignedStudents ?? 0 }}/{{ plan.vehicleCapacity ?? '-' }} alunos
+            </div>
+          </div>
+            <div class="list-meta">
+              <span>{{ plan.totalDistanceKm | number:'1.1-1' }} km</span>
+              <span>{{ planDuration(plan) | number:'1.0-0' }} min</span>
+            </div>
+          </div>
+        <ul class="list">
+          <li *ngFor="let stop of displayStops(plan)">
+            <div>
+              <div class="list-title">{{ stop.sequence }}. {{ stop.label }}</div>
+              <div class="list-sub" *ngIf="stop.groupedStudents?.length">
+                Alunos: {{ stop.groupedStudents.join(', ') }}
+              </div>
+              <div class="list-sub" *ngIf="!stop.groupedStudents?.length && stop.studentName">
+                Aluno: {{ stop.studentName }}
+              </div>
+              <div class="list-sub" *ngIf="stop.schoolName">Escola: {{ stop.schoolName }}</div>
+              <div class="list-sub" *ngIf="stop.address">Endereço: {{ stop.address }}</div>
+              <div class="list-sub" *ngIf="stop.arrival">Chegada prevista: {{ stop.arrival }}</div>
+            </div>
+            <div class="list-meta">
+              <span *ngIf="stop.distanceKm !== undefined">{{ stop.distanceKm | number:'1.1-1' }} km</span>
+              <span *ngIf="stop.durationMin !== undefined">{{ stop.durationMin | number:'1.0-0' }} min</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="map-legend">
+        <span class="legend-item"><span class="legend-dot start"></span>Garagem</span>
+        <span class="legend-item"><span class="legend-dot pickup"></span>Coleta</span>
+        <span class="legend-item"><span class="legend-dot delivery"></span>Entrega</span>
+        <span class="legend-item"><span class="legend-dot end"></span>Retorno</span>
+      </div>
+
+      <div class="map-panel">
+        <div class="map-canvas" #mapContainer></div>
+      </div>
+    </div>
+  </article>
+  </ng-container>
+</section>
+
+<ng-template #loading>
+  <section class="page">
+    <div class="status-pill">Carregando rota...</div>
+  </section>
+</ng-template>
+
+<ng-template #notFound>
+  <section class="page">
+    <div class="page-head">
+      <div>
+        <h2>Rota não encontrada</h2>
+        <p>Verifique o código da rota ou volte para a lista.</p>
+      </div>
+      <div class="page-actions">
+        <button class="primary" [routerLink]="['/rotas']">Voltar para rotas</button>
+      </div>
+    </div>
+  </section>
+</ng-template>

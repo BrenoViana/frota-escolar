@@ -1,0 +1,118 @@
+﻿<section class="page" *ngIf="vm$ | async as vm; else notFound">
+  <div class="page-head">
+    <div>
+      <h2>{{ vm.school.name }}</h2>
+      <p>Bairro: {{ vm.school.district }} - {{ vm.school.address }}</p>
+    </div>
+    <div class="page-actions">
+      <button class="ghost" [routerLink]="['/escolas']">Voltar</button>
+      <button class="primary" [routerLink]="['/escolas', vm.school.id, 'editar']">
+        Editar escola
+      </button>
+      <button
+        class="ghost danger"
+        type="button"
+        [disabled]="deleting"
+        (click)="confirmDelete(vm.school.id)"
+      >
+        Excluir
+      </button>
+    </div>
+  </div>
+
+  <div class="notice error" *ngIf="errorMessage">{{ errorMessage }}</div>
+  <div class="status-pill" *ngIf="deleting">Excluindo escola...</div>
+
+  <div class="stats-grid">
+    <article class="card stat-card" *ngFor="let stat of vm.stats">
+      <div class="stat-label">{{ stat.label }}</div>
+      <div class="stat-value">{{ stat.value }}</div>
+      <div class="stat-meta">{{ stat.meta }}</div>
+    </article>
+  </div>
+
+  <div class="two-col">
+    <article class="card list-card">
+      <div class="card-head">
+        <h3>Janelas de operacao</h3>
+        <span class="badge" [ngClass]="vm.school.tone">{{ vm.school.status | statusLabel }}</span>
+      </div>
+      <ul class="list">
+        <li>
+          <div>
+            <div class="list-title">Turno</div>
+            <div class="list-sub">{{ vm.school.shift | shiftLabel }}</div>
+          </div>
+          <span class="pill">{{ vm.occupancy }} ocupação</span>
+        </li>
+        <li>
+          <div>
+            <div class="list-title">Embarque</div>
+            <div class="list-sub">{{ vm.school.pickupWindow }}</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="list-title">Desembarque</div>
+            <div class="list-sub">{{ vm.school.dropoffWindow }}</div>
+          </div>
+        </li>
+      </ul>
+    </article>
+
+    <article class="card list-card">
+      <div class="card-head">
+        <h3>Contatos</h3>
+        <button class="ghost tiny">Atualizar</button>
+      </div>
+      <ul class="list">
+        <li *ngFor="let contact of vm.contacts">
+          <div>
+            <div class="list-title">{{ contact.role }}</div>
+            <div class="list-sub">{{ contact.name }}</div>
+          </div>
+          <span class="pill">{{ contact.phone }}</span>
+        </li>
+      </ul>
+    </article>
+  </div>
+
+  <article class="card list-card">
+    <div class="card-head">
+      <h3>Rotas vinculadas</h3>
+      <button class="ghost tiny">Replanejar</button>
+    </div>
+    <ul class="list">
+      <li *ngFor="let route of vm.routes">
+        <div>
+          <div class="list-title">{{ route.name }}</div>
+          <div class="list-sub">{{ route.schedule }}</div>
+        </div>
+        <span class="badge" [ngClass]="route.tone">{{ route.status | statusLabel }}</span>
+      </li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <div class="card-head">
+      <h3>Observações operacionais</h3>
+      <button class="ghost tiny">Adicionar nota</button>
+    </div>
+    <p class="list-sub">{{ vm.school.notes }}</p>
+  </article>
+</section>
+
+<ng-template #notFound>
+  <section class="page">
+    <div class="page-head">
+      <div>
+        <h2>Escola não encontrada</h2>
+        <p>Verifique o código da escola ou volte para a lista.</p>
+      </div>
+      <div class="page-actions">
+        <button class="primary" [routerLink]="['/escolas']">Voltar para escolas</button>
+      </div>
+    </div>
+  </section>
+</ng-template>
+

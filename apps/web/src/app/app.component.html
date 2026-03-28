@@ -1,0 +1,76 @@
+<div class="app-shell" [class.sidebar-open]="sidebarOpen">
+  <div class="sidebar-overlay" *ngIf="sidebarOpen" (click)="closeSidebar()"></div>
+
+  <aside class="sidebar" [class.open]="sidebarOpen">
+    <div class="brand">
+      <div class="logo">FE</div>
+      <div>
+        <div class="brand-title">Frota Escolar</div>
+        <div class="brand-sub">Operacao e rotas</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <ng-container *ngFor="let item of navItems">
+        <div *ngIf="item.children?.length; else navLink" class="nav-group">
+          <div class="nav-label">{{ item.label }}</div>
+          <div class="nav-sub">
+            <a
+              class="nav-item sub"
+              *ngFor="let child of item.children"
+              [routerLink]="child.path"
+              routerLinkActive="active"
+              (click)="closeSidebar()"
+            >
+              <span class="dot"></span>
+              {{ child.label }}
+            </a>
+          </div>
+        </div>
+        <ng-template #navLink>
+          <a
+            class="nav-item"
+            [routerLink]="item.path"
+            routerLinkActive="active"
+            (click)="closeSidebar()"
+          >
+            <span class="dot"></span>
+            {{ item.label }}
+          </a>
+        </ng-template>
+      </ng-container>
+    </nav>
+
+    <div class="sidebar-card">
+      <div class="chip">Status beta</div>
+      <div>Ferramentas prontas para prototipos de dashboard e escolas.</div>
+      <button class="ghost tiny">Ver roadmap</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="topbar">
+      <button
+        class="menu-toggle"
+        type="button"
+        aria-label="Abrir menu"
+        [attr.aria-expanded]="sidebarOpen"
+        (click)="toggleSidebar()"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="search">
+        <span>Buscar</span>
+        <input type="text" placeholder="Escolas, rotas, alunos">
+      </div>
+      <div class="topbar-right">
+        <div class="status-pill">Hoje: 6 rotas ativas</div>
+        <div class="avatar">BV</div>
+      </div>
+    </header>
+
+    <router-outlet></router-outlet>
+  </main>
+</div>

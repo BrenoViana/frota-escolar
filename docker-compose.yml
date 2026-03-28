@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: frota
       POSTGRES_PASSWORD: postgres
-    ports: ["5432:5432"]
+    ports: ["5435:5432"]
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./infra/postgres/init:/docker-entrypoint-initdb.d
@@ -39,6 +39,7 @@ services:
     build: ./apps/web
     env_file: .env
     depends_on: [api]
+    profiles: ["web"]
     ports: ["3000:3000"]
 
 volumes:
