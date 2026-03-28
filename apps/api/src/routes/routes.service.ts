@@ -49,6 +49,11 @@ export class RoutesService {
         _count: { select: { students: true } },
         students: {
           select: {
+            id: true,
+            name: true,
+            shift: true,
+            status: true,
+            entryTime: true,
             schoolId: true,
             school: { select: { id: true, name: true } },
           },

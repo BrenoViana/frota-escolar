@@ -233,12 +233,16 @@ export class StudentsService {
     const entryTime = payload.entryTime?.toString().trim() ?? '';
     const city = payload.city?.trim() ?? '';
     const state = payload.state?.trim().toUpperCase() ?? '';
-    const lat = payload.lat !== undefined && payload.lat !== null && payload.lat !== ''
-      ? Number(payload.lat)
-      : null;
-    const lng = payload.lng !== undefined && payload.lng !== null && payload.lng !== ''
-      ? Number(payload.lng)
-      : null;
+    const latValue = payload.lat;
+    const lngValue = payload.lng;
+    const lat =
+      latValue !== undefined && latValue !== null && `${latValue}`.trim() !== ''
+        ? Number(latValue)
+        : null;
+    const lng =
+      lngValue !== undefined && lngValue !== null && `${lngValue}`.trim() !== ''
+        ? Number(lngValue)
+        : null;
     const formattedAddress =
       street && number && city && state
         ? `${street}, ${number}${district ? `, ${district}` : ''} - ${city}/${state}`

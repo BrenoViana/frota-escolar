@@ -147,13 +147,15 @@ export class VehiclesService {
     const district = payload.garageDistrict?.trim() ?? '';
     const city = payload.garageCity?.trim() ?? '';
     const state = payload.garageState?.trim().toUpperCase() ?? '';
+    const latValue = payload.garageLat;
+    const lngValue = payload.garageLng;
     const lat =
-      payload.garageLat !== undefined && payload.garageLat !== null && payload.garageLat !== ''
-        ? Number(payload.garageLat)
+      latValue !== undefined && latValue !== null && `${latValue}`.trim() !== ''
+        ? Number(latValue)
         : null;
     const lng =
-      payload.garageLng !== undefined && payload.garageLng !== null && payload.garageLng !== ''
-        ? Number(payload.garageLng)
+      lngValue !== undefined && lngValue !== null && `${lngValue}`.trim() !== ''
+        ? Number(lngValue)
         : null;
 
     if (!district) {
